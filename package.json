@@ -1,8 +1,8 @@
 {
-  "name": "vue-mdeditor",
+  "name": "top-editor",
   "description": "A markdown editor by vue.js",
   "version": "0.0.1",
-  "author": "wmui <qq22337383@gmail.com>",
+  "author": "wmui",
   "private": false,
   "main": "dist/build.js",
   "directories": {
@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vue-blog/vue-mdeditor.git"
+    "url": "git+https://github.com/vuetop/top-editor.git"
   },
   "keywords": [
     "vueblog",
@@ -22,6 +22,7 @@
     "vue"
   ],
   "dependencies": {
+    "marked": "^0.3.6",
     "vue": "^2.3.3"
   },
   "devDependencies": {
@@ -38,10 +39,9 @@
     "webpack": "^2.6.1",
     "webpack-dev-server": "^2.4.5"
   },
-  "author": "wmui",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/vue-blog/vue-mdeditor/issues"
+    "url": "https://github.com/vuetop/top-editor/issues"
   },
-  "homepage": "https://github.com/vue-blog/vue-mdeditor#readme"
+  "homepage": "https://github.com/vuetop/top-editor#readme"
 }
