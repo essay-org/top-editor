@@ -23,14 +23,14 @@
 			<!-- 内容区 -->
 			<div class="editor-content">
 				<textarea class="content-editor" v-model="content"></textarea>
-				<div class="content-preview" v-html="html"></div>
+				<div class="content-preview markdown-body" v-html="html"></div>
 			</div>
 		</div>
 	</div>
 </template>
 <script>
 import markdownIt from 'markdown-it'
-import hljs from 'highlight.js' 
+import hljs from 'highlightjs' 
 
 	export default {
 		name: 'TopEditor',
@@ -82,6 +82,15 @@ import hljs from 'highlight.js'
 	      let options = {
 	        html: true,
 	        breaks: true,
+	        highlight(str, lang) {
+          lang = lang || 'javascript'
+          if (hljs.getLanguage(lang)) {
+            try {
+              return hljs.highlight(lang, str).value
+            } catch (__) {}
+          }
+          return ''
+        },
 	        ...this.options
 	      }
 	      this.markdownit = markdownIt(options)
@@ -99,7 +108,9 @@ import hljs from 'highlight.js'
 	}
 </script>
 <style lang="scss">
+	@import '~highlightjs/styles/github.css';
 	@import './iconfont/iconfont.css';
+	@import "./styles/github-markdown.css";
 	* {
 		padding:0;
 		margin:0;

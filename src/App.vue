@@ -3,23 +3,11 @@
 </template>
 <script>
 // import 'highlightjs/styles/github.css'
-import hljs from 'highlightjs'
 export default {
   data() {
     return {
-      content: '# hello',
+      content: '>hello \n ```javascript\nfunction(){\nalert(1)}\n```',
       options: {
-        highlight(str, lang) {
-          // console.log(str,lang)
-          lang = lang || 'javascript'
-          if (hljs.getLanguage(lang)) {
-            // console.log(hljs.getLanguage(lang))
-            try {
-              return hljs.highlight(lang, str).value
-            } catch (__) {}
-          }
-          return ''
-        },
         quotes: '“”‘’',
         typographer: true,
         linkify: true
