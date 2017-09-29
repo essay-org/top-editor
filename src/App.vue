@@ -2,17 +2,17 @@
   <top-editor v-model="content" :options="options" :height="height" :zIndex="zIndex" :upload="uploadImg"></top-editor>
 </template>
 <script>
-// import 'highlightjs/styles/github.css'
+import content from '../README.md'
 export default {
   data() {
     return {
-      content: '>hello \n ```javascript\nfunction(){\nalert(1)}\n```',
+      content: content,
       options: {
         quotes: '“”‘’',
         typographer: true,
         linkify: true
       },
-      height: '70vh',
+      height: '30vh',
       zIndex: 999,
       uploadImg: {
         // defualt form upload name
