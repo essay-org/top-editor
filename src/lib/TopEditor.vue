@@ -1,3 +1,5 @@
+<!-- https://github.com/k55k32/markdown-it-editor -->
+<!-- https://github.com/vuetop/top-editor -->
 <template>
   <div class="top-editor" :style="{zIndex:zIndex, height:realHeight}" :class="{'full-screen':isFullScreen}">
     <div class="editor-wrap">
@@ -28,7 +30,7 @@
       <div class="editor-content">
         <div class="content-wrap">
           <!-- 编辑区 -->
-          <textarea class="content-editor" v-model="content" @scroll="scrollReset" @keydown="keydown" ref="editor" v-show="showContent"></textarea>
+          <textarea class="content-editor" v-model="content" @scroll="scrollReset" @keydown="keydown" @paste="pasteEvent" ref="editor" v-show="showContent"></textarea>
           <!-- 预览区 -->
           <div class="content-preview markdown-body" v-html="html" ref="preview" v-show="showPreview"></div>
         </div>
@@ -152,6 +154,19 @@ export default {
     }
   },
   methods: {
+    pasteEvent(event) {
+      var items = (event.clipboardData || event.originalEvent.clipboardData).items
+      for (let index in items) {
+        let item = items[index]
+        // 如果是图片
+        if (item.kind === 'file') {
+          let blob = item.getAsFile()
+          let fileData = new window.FormData()
+          fileData.append(this.uploadOpt.name, blob)
+          this.uploadFormData(fileData)
+        }
+      }
+    },
     doPreview() {
       if (!this.preview) {
         this.showContent = !this.showContent
@@ -475,6 +490,7 @@ body {
       padding-right: 5px;
       font-size: 0;
       border-bottom: 1px solid #ccc;
+      background-color: #fff;
       .icon {
         display: inline-block;
         padding: 10px;
@@ -513,6 +529,7 @@ body {
           position: relative;
           padding: 15px;
           overflow: auto;
+          background-color: #fff;
         }
       }
     }

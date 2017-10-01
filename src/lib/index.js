@@ -9,3 +9,4 @@ if (typeof window !== 'undefined' && window.Vue) {
 	window.Vue.use(editor)
 }
 export default editor
+export { TopEditor }
