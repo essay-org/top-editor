@@ -1,20 +1,24 @@
 <template>
-  <div class="top-editor" :style="{zIndex:zIndex, height:realHeight || '50vh'}" :class="{'full-screen':isFullScreen}">
+  <div class="top-editor" :style="{zIndex:zIndex, height:realHeight}" :class="{'full-screen':isFullScreen}">
     <div class="editor-wrap">
       <!-- 菜单栏 -->
       <div class="editor-menu">
         <div class="menu-group-left">
-          <i class="icon iconfont icon-bold" title="加粗 &lt;strong&gt; Ctrl+b" @click="doCode('**')" hotkey="Ctrl+b"></i>
-          <i class="icon iconfont icon-italic" title="斜体 &lt;em&gt; Ctrl+i" @click="doCode('*')" hotkey="Ctrl+i"></i>
+          <i class="icon iconfont icon-bold" title="加粗 &lt;strong&gt; Ctrl+b" @click="doMark('**')" hotkey="Ctrl+b"></i>
+          <i class="icon iconfont icon-italic" title="斜体 &lt;em&gt; Ctrl+i" @click="doMark('*')" hotkey="Ctrl+i"></i>
           <i class="icon iconfont icon-underline" title="下划线 &lt;u&gt; Ctrl+u" @click="doAction('&lt;u&gt;&lt;/u&gt;', -4)" hotkey="Ctrl+u"></i>
-          <i class="icon iconfont icon-strike" title="中划线 &lt;s&gt; Ctrl+d" @click="doCode('~~')" hotkey="Ctrl+d"></i>
-          <i class="icon iconfont icon-link" title="超链接 &lt;a&gt; Ctrl+l" @click="doAction('[name]()', -1)" hotkey="Ctrl+l"></i>
-          <i class="icon iconfont icon-code" title="代码 &lt;code&gt; Ctrl+`" @click="addCode" hotkey="Ctrl+`"></i>
-          <i class="icon iconfont icon-image" title="图片 &lt;img&gt; Ctrl+g" hotkey="Ctrl+g"></i>
-          <i class="icon iconfont icon-undo" title="撤销 Ctrl+z" hotkey="Ctrl+z"></i>
-          <i class="icon iconfont icon-redo" title="恢复 Ctrl+y" hotkey="Ctrl+y"></i>
-          <i class="icon iconfont icon-preview"></i>
-          <i class="icon iconfont icon-query"></i>
+          <i class="icon iconfont icon-strike" title="中划线 &lt;s&gt; Ctrl+d" @click="doMark('~~')" hotkey="Ctrl+d"></i>
+          <!-- <i class="icon iconfont icon-table" title="表格 &lt;table&gt; Ctrl+t" @click="doMark('')" hotkey="Ctrl+t"></i> -->
+          <i class="icon iconfont icon-link" title="超链接 &lt;a&gt; Ctrl+l" @click="doAction('[]()', -1)" hotkey="Ctrl+l"></i>
+          <i class="icon iconfont icon-code" title="代码 &lt;code&gt; Ctrl+`" @click="doCode" hotkey="Ctrl+`"></i>
+          <!-- 图片上传 -->
+          <i class="icon iconfont icon-image" title="图片 &lt;img&gt; Ctrl+g" hotkey="Ctrl+g" @click="uploadClick" v-if="uploadOpt.url">
+            <input ref="upload" type="file" :name="uploadOpt.name" v-show="false" :accept="uploadOpt.accept" @change="fileUpload"/>
+          </i>
+          <i class="icon iconfont icon-undo" title="撤销 Ctrl+z" @click="undo" hotkey="Ctrl+z" :class="{'disable':!canUndo}"></i>
+          <i class="icon iconfont icon-redo" title="恢复 Ctrl+y" @click="redo" hotkey="Ctrl+y" :class="{'disable':!canRedo}"></i>
+          <i class="icon iconfont icon-preview" @click="doPreview"></i>
+          <a href="http://wowubuntu.com/markdown/"><i class="icon iconfont icon-query"></i></a>
         </div>
         <div class="menu-group-right">
           <i class="icon iconfont icon-fullscreen" @click="isFullScreen = !isFullScreen"></i>
@@ -24,10 +28,13 @@
       <div class="editor-content">
         <div class="content-wrap">
           <!-- 编辑区 -->
-          <textarea class="content-editor" v-model="content" @scroll="scrollReset" @keydown="keydown" ref="editor"></textarea>
+          <textarea class="content-editor" v-model="content" @scroll="scrollReset" @keydown="keydown" ref="editor" v-show="showContent"></textarea>
           <!-- 预览区 -->
-          <div class="content-preview markdown-body" v-html="html" ref="preview"></div>
+          <div class="content-preview markdown-body" v-html="html" ref="preview" v-show="showPreview"></div>
         </div>
+        <transition enter-active-class="fade in" leave-active-class="fade out">
+          <div class="upload-status" :class="statusMessage.type" v-show="statusMessage.show">{{statusMessage.text}}</div>
+        </transition>
       </div>
     </div>
   </div>
@@ -49,7 +56,29 @@ function setEditorRange(editor, start, length = 0) {
 }
 export default {
   name: 'TopEditor',
-  props: ['value', 'options', 'upload', 'zIndex', 'height'],
+  props: {
+    value: {
+      type: String
+    },
+    options: {
+      type: Object
+    },
+    upload: {
+      type: Object
+    },
+    zIndex: {
+      type: Number,
+      default: 99
+    },
+    height: {
+      type: String,
+      default: '70vh'
+    },
+    preview: {
+      type: Boolean,
+      default: true
+    }
+  },
   data() {
     return {
       content: '',
@@ -58,10 +87,16 @@ export default {
       uploadOpt: {
         name: 'file',
         accept: 'image/jpg,image/jpeg,image/png',
-        url: 0,
+        url: false,
         header: {}
       },
-      isFullScreen: false
+      isFullScreen: false,
+      currentIndex: 0,
+      currentTimeout: null,
+      markdownit: null,
+      showContent: true,
+      showPreview: true,
+      statusMessage: { type: '', text: '', timeout: 0, show: false }
     }
   },
   created() {
@@ -73,11 +108,26 @@ export default {
     this.history.push(this.content)
     // 初始化markdownit配置
     this.initMarkdown()
+    if (!this.preview) {
+      this.showPreview = false
+    }
   },
   watch: {
     content() {
       this.renderIt()
       this.scrollReset()
+      if (this.content === this.history[this.currentIndex]) return
+      // 内容变化，重新保存到历史记录，每隔500毫秒添加一条历史记录
+      window.clearTimeout(this.currentTimeout)
+      this.currentTimeout = setTimeout(() => {
+        this.saveHistory()
+        this.$emit('save-history')
+      }, 500)
+    },
+    // 执行了撤销或恢复，currentIndex会变化，重置内容
+    currentIndex() {
+      let history = this.history[this.currentIndex]
+      this.content = history
     },
     // 配置文件变化后重新初始化
     options: {
@@ -85,15 +135,31 @@ export default {
       handler() {
         this.initMarkdown()
       }
-    },
+    }
   },
   computed: {
     realHeight() {
       if (this.isFullScreen) return '100%'
       return this.height
+    },
+    // ctrl+z
+    canUndo() {
+      return this.currentIndex > 0
+    },
+    // ctrl+y
+    canRedo() {
+      return this.currentIndex < this.history.length - 1
     }
   },
   methods: {
+    doPreview() {
+      if (!this.preview) {
+        this.showContent = !this.showContent
+        this.showPreview = !this.showPreview
+      } else {
+        this.showContent = !this.showContent
+      }
+    },
     // 初始化配置文件
     initMarkdown() {
       // 可在这里配置默认项
@@ -174,7 +240,7 @@ export default {
         }
       }
     },
-    doCode(code) {
+    doMark(code) {
       this.insertBetween(code, code)
     },
     // doAction('[name]()',-1)   insertBetween('[name](',')')
@@ -184,12 +250,12 @@ export default {
       let actionAfter = action.substr(relativeEnd)
       this.insertBetween(actionBefore, actionAfter)
     },
-    addCode() {
+    doCode() {
       let select = this.getSelectStr()
       if (select.indexOf('\n') > -1) {
         this.insertBetween('```\n', '\n```')
       } else {
-        this.doCode('`')
+        this.doMark('`')
       }
     },
     insertTo(text, position = getEditorSelection(this.$refs.editor).start) {
@@ -215,6 +281,115 @@ export default {
         setEditorRange(editor, start + actionBefore.length, select.length)
       })
     },
+
+    undo() {
+      // 光标位置
+      let { start } = getEditorSelection(this.$refs.editor)
+      // 撤销前内容的长度
+      let currentLength = this.content.length
+      // 内容重置
+      this.canUndo && this.currentIndex--
+        // 光标重置
+        this.$nextTick(() => {
+          // this.content.length是撤销后的内容长度
+          // start是撤销内容后的光标位置
+          start -= currentLength - this.content.length
+          setEditorRange(this.$refs.editor, start)
+        })
+    },
+    redo() {
+      // 如果可以恢复，则currentIndex++
+      let { start } = getEditorSelection(this.$refs.editor)
+      let currentLength = this.content.length
+      this.canRedo && this.currentIndex++
+        this.$nextTick(() => {
+          start += this.content.length - currentLength
+          setEditorRange(this.$refs.editor, start)
+        })
+    },
+
+    _status(type, text, time = text.length / 10 * 1000) {
+      window.clearTimeout(this.statusMessage.timeout)
+      let timeout = setTimeout(() => {
+        this.statusMessage.show = false
+      }, time)
+      this.statusMessage = { type, text, timeout, show: true }
+    },
+    success(message, timeout) {
+      this._status('success', message, timeout)
+    },
+    error(message, timeout) {
+      this._status('error', message, timeout)
+    },
+    info(message, timeout) {
+      this._status('info', message, timeout)
+    },
+    closeStatus() {
+      this.statusMessage.show = false
+    },
+
+    uploadClick() {
+      this.$refs.upload.click()
+    },
+    fileUpload() {
+      let input = this.$refs.upload
+      let upload = this.$emit('custom-upload', input)
+      if (upload === false) return
+      let fileData = new window.FormData()
+      fileData.append(input.name, input.files[0])
+      this.uploadFormData(fileData)
+    },
+    uploadFormData(formData) {
+      if (!this.uploadOpt.url) {
+        this.error('请先配置上传路径')
+        return false
+      }
+      let xhr = new window.XMLHttpRequest()
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            let success = this.$emit('upload-success', xhr.responseText)
+            if (success !== false) {
+              // 新的URL
+              this.insertTo(`\n![](${xhr.responseText})\n`)
+            }
+          } else {
+            let error = this.$emit('upload-error', xhr)
+            if (error !== false) {
+              this.error('上传失败')
+            }
+          }
+        }
+      }
+      // 上传进度条
+      xhr.upload.onprogress = (e) => {
+        let upload = this.$emit('uploading', { loaded: e.loaded, total: e.total })
+        if (upload !== false) {
+          let pre = parseInt(e.loaded / e.total * 100)
+          let loaded = parseInt(e.loaded / 1024)
+          let total = parseInt(e.total / 1024)
+          this.info(`上传进度： ${loaded}kb / ${total}kb | ${pre}%`)
+        }
+      }
+      // 发送请求，并设置请求头
+      xhr.open('POST', this.uploadOpt.url, true)
+      if (this.uploadOpt.header) {
+        Object.keys(this.uploadOpt.header).forEach(k => {
+          xhr.setRequestHeader(k, this.uploadOpt.header[k])
+        })
+      }
+      xhr.send(formData)
+    },
+
+    // 内容发生变化，执行
+    saveHistory() {
+      // 第一次变化 this.history中还是原来的一项,
+      this.history.splice(this.currentIndex + 1, this.history.length)
+      // 变化后的内容添加进去，此时有两项
+      this.history.push(this.content)
+      // currentIndex表示当前内容在history中的下标
+      this.currentIndex = this.history.length - 1
+    },
     // 获取选中的文本
     getSelectStr() {
       let editor = this.$refs.editor
@@ -238,9 +413,34 @@ export default {
 @import '~highlightjs/styles/github.css';
 @import './iconfont/iconfont.css';
 @import "./styles/github-markdown.css";
-* {
-  padding: 0;
+html,
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+hr,
+p,
+iframe,
+dl,
+dt,
+dd,
+div,
+ul,
+ol,
+li,
+pre,
+form,
+button,
+input,
+textarea,
+th,
+td,
+fieldset {
   margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
 
@@ -258,12 +458,13 @@ body {
     position: fixed;
     top: 0;
     left: 0;
+    width: 100%;
+    height: 100%;
   }
   .editor-wrap {
     position: relative;
     height: 100%;
     display: flex;
-    // 上下排列
     flex-direction: column;
     .editor-menu {
       width: 100%;
@@ -272,13 +473,18 @@ body {
       overflow-x: auto;
       padding-left: 5px;
       padding-right: 5px;
+      font-size: 0;
       border-bottom: 1px solid #ccc;
       .icon {
         display: inline-block;
-        padding: 10px 8px;
+        padding: 10px;
         font-size: 18px;
         color: #A9A9A9;
         cursor: pointer;
+      }
+      .disable {
+        color: #eee;
+        cursor: not-allowed;
       }
     }
     .editor-content {
@@ -289,23 +495,74 @@ body {
         width: 100%;
         height: 100%;
         display: flex;
-	      .content-editor {
-	        font-size: 14px;
-	        line-height: 24px;
-	        border: 0;
-	        border-right: 1px solid #ccc;
-	        width: 50%;
-	        resize: none;
-	        background-color: #f8f8f8;
-	        padding: 15px;
-	        outline: none;
-	        overflow: auto;
-	      }
-	      .content-preview {
-	        width: 50%;
-	        padding: 15px;
-	        overflow: auto;
-	      }
+        .content-editor {
+          flex: 1;
+          position: relative;
+          font-size: 14px;
+          line-height: 24px;
+          border: 0;
+          border-right: 1px solid #ccc;
+          resize: none;
+          background-color: #f8f8f8;
+          padding: 15px;
+          outline: none;
+          overflow: auto;
+        }
+        .content-preview {
+          flex: 1;
+          position: relative;
+          padding: 15px;
+          overflow: auto;
+        }
+      }
+    }
+    .upload-status {
+      position: absolute;
+      top: 0;
+      padding: 8px;
+      background: rgba(0, 0, 0, 0.1);
+      width: 100%;
+      color: #333;
+      &.info {
+        background: rgba(130, 232, 255, 0.2);
+      }
+      &.success {
+        background: rgba(101, 255, 177, 0.2);
+      }
+      &.error {
+        background: rgba(255, 101, 101, 0.2);
+      }
+    }
+    .fade {
+      animation-duration: 0.2s;
+      &.in {
+        animation-name: fadeIn;
+      }
+      &.out {
+        animation-name: fadeOut;
+      }
+    }
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+      }
+      50% {
+        opacity: 0.5;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeOut {
+      0% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+      100% {
+        opacity: 0;
       }
     }
   }

@@ -2,13 +2,13 @@ var path = require('path')
 var webpack = require('webpack')
 
 module.exports = {
-  // entry: './src/lib/index.js',
-  entry: './src/main.js',
+  entry: './src/lib/index.js',
+  // entry: './src/main.js',
   output: {
     path: path.resolve(__dirname, './dist'),
     publicPath: '/dist/',
-    filename: 'build.js',
-    // filename: 'top-editor.js',
+    // filename: 'build.js',
+    filename: 'top-editor.js',
     library: 'TopEditor',
     libraryTarget: 'umd',
     umdNamedDefine: true 
