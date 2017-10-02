@@ -161,13 +161,13 @@ import { TopPreview } from 'top-editor'
 ## 配置项说明
 属性：  
 | 参数 | 说明 | 类型 | 默认值 |
-| ---- | ---- | ---- | ------ |
-| preview | 是否开启预览模式 | Boolean | true |
-| v-model | textarea中的值 | String | null |
-| options | markdown-it的配置项 | Object | [文档](https://github.com/markdown-it/markdown-it) |
-| zIndex | 编辑器的z-index | number | 99 |
-| height | 编辑器默认高度 | String | 70vh |
-| upload | 图片上传配置 | Object | [详情](#upload)
+| ------- | ------------------- | -------- | ---- |
+| preview | 是否开启预览模式    | Boolean  | true |
+| v-model | textarea中的值      | String   | null |
+| options | markdown-it的配置项 | Object   | [文档](https://github.com/markdown-it/markdown-it) |
+| zIndex  | 编辑器的z-index     | number   | 99   |
+| height  | 编辑器默认高度      | String   | 70vh |
+| upload  | 图片上传配置        | Object   | [详情](#upload) |
 
 <a id="upload"></a>
 ## upload配置项
