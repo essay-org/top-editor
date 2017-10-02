@@ -3,12 +3,23 @@
 </template>
 <script>
 import content from '../README.md'
+// 代码高亮
+import hljs from 'highlight.js'
 export default {
   data() {
     return {
-      content: '',
+      content: ' ## hello ',
       options: {
-        linkify: true
+        linkify: true,
+        highlight(str, lang) {
+          lang = lang || 'javascript'
+          if (hljs.getLanguage(lang)) {
+            try {
+              return hljs.highlight(lang, str).value
+            } catch (__) {}
+          }
+          return ''
+        },
       },
       zIndex: 999,
       uploadImg: {
@@ -18,3 +29,6 @@ export default {
   }
 }
 </script>
+<style>
+  @import '~highlight.js/styles/github.css';
+</style>

@@ -1,12 +1,24 @@
 import TopEditor from './TopEditor.vue'
-const editor = {
-	install: function(Vue) {
-		Vue.component(TopEditor.name, TopEditor)
-	} 
+import TopPreview from './TopPreview.vue'
+const version = '0.0.3'
+const components  = [TopEditor, TopPreview]
+const install = function(Vue) {
+  if (install.installed) return;
+
+  components.forEach(component => {
+    Vue.component(component.name, component);
+  })
 }
 
 if (typeof window !== 'undefined' && window.Vue) {
-	window.Vue.use(editor)
+	install(window.Vue)
 }
-export default editor
-export { TopEditor }
+
+export {
+	TopEditor, 
+	TopPreview 
+}
+export default {
+	install,
+  version
+}

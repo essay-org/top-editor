@@ -30,9 +30,10 @@
       <div class="editor-content">
         <div class="content-wrap">
           <!-- 编辑区 -->
-          <textarea class="content-editor" v-model="content" @scroll="scrollReset" @keydown="keydown" @paste="pasteEvent" ref="editor" v-show="showContent"></textarea>
+          <textarea class="content-editor" v-model="content" @scroll="scrollReset" @keydown="keydown" @paste="pasteEvent" ref="editor" v-show="showContent" autocapitalize="off"></textarea>
           <!-- 预览区 -->
-          <div class="content-preview markdown-body" v-html="html" ref="preview" v-show="showPreview"></div>
+          <top-preview ref="preview" v-show="showPreview" :content="content" :options="options"></top-preview>
+          
         </div>
         <transition enter-active-class="fade in" leave-active-class="fade out">
           <div class="upload-status" :class="statusMessage.type" v-show="statusMessage.show">{{statusMessage.text}}</div>
@@ -42,8 +43,7 @@
   </div>
 </template>
 <script>
-import markdownIt from 'markdown-it'
-import hljs from 'highlightjs'
+import TopPreview from './TopPreview.vue'
 // 选中内容的位置
 function getEditorSelection(editor) {
   return {
@@ -95,7 +95,6 @@ export default {
       isFullScreen: false,
       currentIndex: 0,
       currentTimeout: null,
-      markdownit: null,
       showContent: true,
       showPreview: true,
       statusMessage: { type: '', text: '', timeout: 0, show: false }
@@ -108,15 +107,16 @@ export default {
     this.content = this.value
     // 保存一条历史记录
     this.history.push(this.content)
-    // 初始化markdownit配置
-    this.initMarkdown()
     if (!this.preview) {
       this.showPreview = false
     }
   },
   watch: {
+    value(value) {
+      if (this.content !== value) this.content = value
+    },
     content() {
-      this.renderIt()
+      this.$emit('input', this.content)
       this.scrollReset()
       if (this.content === this.history[this.currentIndex]) return
       // 内容变化，重新保存到历史记录，每隔500毫秒添加一条历史记录
@@ -130,13 +130,6 @@ export default {
     currentIndex() {
       let history = this.history[this.currentIndex]
       this.content = history
-    },
-    // 配置文件变化后重新初始化
-    options: {
-      deep: true,
-      handler() {
-        this.initMarkdown()
-      }
     }
   },
   computed: {
@@ -175,40 +168,12 @@ export default {
         this.showContent = !this.showContent
       }
     },
-    // 初始化配置文件
-    initMarkdown() {
-      // 可在这里配置默认项
-      let options = {
-        html: true,
-        breaks: true,
-        highlight(str, lang) {
-          lang = lang || 'javascript'
-          if (hljs.getLanguage(lang)) {
-            try {
-              return hljs.highlight(lang, str).value
-            } catch (__) {}
-          }
-          return ''
-        },
-        ...this.options
-      }
-      this.markdownit = markdownIt(options)
-      this.renderIt()
-    },
-    renderIt() {
-      this.html = this.markdownit.render(this.content)
-      this.$nextTick(() => {
-        this.$el.querySelectorAll('a').forEach((a) => {
-          a.setAttribute('target', '_blank')
-        })
-      })
-    },
     scrollReset() {
       let editor = this.$refs.editor
       let scrollHeight = (editor.scrollHeight - editor.clientHeight) || editor.scrollHeight
       // 获得被卷去的比例
       let scroll = editor.scrollTop / scrollHeight
-      let preview = this.$refs.preview
+      let preview = this.$refs.preview.$el
       // 设置预览区被卷去的头部
       let preTop = (preview.scrollHeight - preview.clientHeight) * scroll
       preview.scrollTop = preTop
@@ -421,13 +386,14 @@ export default {
       let after = this.content.substr(end, this.content.length)
       return { before, select, after }
     }
+  },
+  components: {
+    TopPreview
   }
 }
 </script>
 <style lang="scss">
-@import '~highlightjs/styles/github.css';
 @import './iconfont/iconfont.css';
-@import "./styles/github-markdown.css";
 html,
 body,
 h1,
