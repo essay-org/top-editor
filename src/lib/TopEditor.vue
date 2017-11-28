@@ -90,7 +90,7 @@ export default {
         name: 'file',
         accept: 'image/jpg,image/jpeg,image/png',
         url: false,
-        header: {}
+        headers: {}
       },
       isFullScreen: false,
       currentIndex: 0,
@@ -100,7 +100,7 @@ export default {
       statusMessage: { type: '', text: '', timeout: 0, show: false }
     }
   },
-  created() {
+  mounted() {
     this.uploadOpt = { ...this.uploadOpt, ...this.upload }
     // console.log(this.uploadOpt)
     // this.value接收v-model中的值
@@ -353,9 +353,9 @@ export default {
       }
       // 发送请求，并设置请求头
       xhr.open('POST', this.uploadOpt.url, true)
-      if (this.uploadOpt.header) {
-        Object.keys(this.uploadOpt.header).forEach(k => {
-          xhr.setRequestHeader(k, this.uploadOpt.header[k])
+      if (this.uploadOpt.headers) {
+        Object.keys(this.uploadOpt.headers).forEach(k => {
+          xhr.setRequestHeader(k, this.uploadOpt.headers[k])
         })
       }
       xhr.send(formData)

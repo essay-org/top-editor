@@ -1,7 +1,7 @@
 {
   "name": "top-editor",
   "description": "A markdown editor",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "author": "wmui",
   "private": false,
   "main": "dist/build.js",
@@ -22,9 +22,10 @@
     "vue",
     "markdown-it"
   ],
-  "dependencies": {
+  "peerDependencies": {
+    "highlight.js": "^9.12.0",
     "markdown-it": "^8.4.0",
-    "vue": "^2.3.3"
+    "vue": "latest"
   },
   "devDependencies": {
     "babel-core": "^6.0.0",
