@@ -33,7 +33,7 @@
           <textarea class="content-editor" v-model="content" @scroll="scrollReset" @keydown="keydown" @paste="pasteEvent" ref="editor" v-show="showContent" autocapitalize="off"></textarea>
           <!-- 预览区 -->
           <top-preview ref="preview" v-show="showPreview" :content="content" :options="options"></top-preview>
-          
+
         </div>
         <transition enter-active-class="fade in" leave-active-class="fade out">
           <div class="upload-status" :class="statusMessage.type" v-show="statusMessage.show">{{statusMessage.text}}</div>
@@ -392,39 +392,8 @@ export default {
   }
 }
 </script>
-<style lang="scss">
-@import './iconfont/iconfont.css';
-html,
-body,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-hr,
-p,
-iframe,
-dl,
-dt,
-dd,
-div,
-ul,
-ol,
-li,
-pre,
-form,
-button,
-input,
-textarea,
-th,
-td,
-fieldset {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
+<style>
+@import url('./iconfont/iconfont.css');
 html,
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -435,119 +404,119 @@ body {
   width: 100%;
   height: 100%;
   border: 1px solid #ccc;
-  &.full-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+}
+.top-editor.full-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.top-editor .editor-wrap {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.top-editor .editor-wrap .editor-menu {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  overflow-x: auto;
+  padding-left: 5px;
+  padding-right: 5px;
+  font-size: 0;
+  border-bottom: 1px solid #ccc;
+  background-color: #fff;
+}
+.top-editor .editor-wrap .editor-menu .icon {
+  display: inline-block;
+  padding: 10px;
+  font-size: 18px;
+  color: #A9A9A9;
+  cursor: pointer;
+}
+.top-editor .editor-wrap .editor-menu .disable {
+  color: #eee;
+  cursor: not-allowed;
+}
+.top-editor .editor-wrap .editor-content {
+  position: relative;
+  flex: 1;
+}
+.top-editor .editor-wrap .editor-content .content-wrap {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+.top-editor .editor-wrap .editor-content .content-wrap .content-editor {
+  flex: 1;
+  position: relative;
+  font-size: 14px;
+  line-height: 24px;
+  border: 0;
+  border-right: 1px solid #ccc;
+  resize: none;
+  background-color: #f8f8f8;
+  padding: 15px;
+  outline: none;
+  overflow: auto;
+}
+.top-editor .editor-wrap .editor-content .content-wrap .content-preview {
+  flex: 1;
+  position: relative;
+  padding: 15px;
+  overflow: auto;
+  background-color: #fff;
+}
+.top-editor .editor-wrap .upload-status {
+  position: absolute;
+  top: 0;
+  padding: 8px;
+  background: rgba(0,0,0,0.1);
+  width: 100%;
+  color: #333;
+}
+.top-editor .editor-wrap .upload-status.info {
+  background: rgba(130,232,255,0.2);
+}
+.top-editor .editor-wrap .upload-status.success {
+  background: rgba(101,255,177,0.2);
+}
+.top-editor .editor-wrap .upload-status.error {
+  background: rgba(255,101,101,0.2);
+}
+.top-editor .editor-wrap .fade {
+  animation-duration: 0.2s;
+}
+.top-editor .editor-wrap .fade.in {
+  animation-name: fadeIn;
+}
+.top-editor .editor-wrap .fade.out {
+  animation-name: fadeOut;
+}
+@keyframes fadeIn {
+  .top-editor .editor-wrap 0% {
+    opacity: 0;
   }
-  .editor-wrap {
-    position: relative;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    .editor-menu {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      overflow-x: auto;
-      padding-left: 5px;
-      padding-right: 5px;
-      font-size: 0;
-      border-bottom: 1px solid #ccc;
-      background-color: #fff;
-      .icon {
-        display: inline-block;
-        padding: 10px;
-        font-size: 18px;
-        color: #A9A9A9;
-        cursor: pointer;
-      }
-      .disable {
-        color: #eee;
-        cursor: not-allowed;
-      }
-    }
-    .editor-content {
-      position: relative;
-      flex: 1;
-      .content-wrap {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        .content-editor {
-          flex: 1;
-          position: relative;
-          font-size: 14px;
-          line-height: 24px;
-          border: 0;
-          border-right: 1px solid #ccc;
-          resize: none;
-          background-color: #f8f8f8;
-          padding: 15px;
-          outline: none;
-          overflow: auto;
-        }
-        .content-preview {
-          flex: 1;
-          position: relative;
-          padding: 15px;
-          overflow: auto;
-          background-color: #fff;
-        }
-      }
-    }
-    .upload-status {
-      position: absolute;
-      top: 0;
-      padding: 8px;
-      background: rgba(0, 0, 0, 0.1);
-      width: 100%;
-      color: #333;
-      &.info {
-        background: rgba(130, 232, 255, 0.2);
-      }
-      &.success {
-        background: rgba(101, 255, 177, 0.2);
-      }
-      &.error {
-        background: rgba(255, 101, 101, 0.2);
-      }
-    }
-    .fade {
-      animation-duration: 0.2s;
-      &.in {
-        animation-name: fadeIn;
-      }
-      &.out {
-        animation-name: fadeOut;
-      }
-    }
-    @keyframes fadeIn {
-      0% {
-        opacity: 0;
-      }
-      50% {
-        opacity: 0.5;
-      }
-      100% {
-        opacity: 1;
-      }
-    }
-
-    @keyframes fadeOut {
-      0% {
-        opacity: 1;
-      }
-      50% {
-        opacity: 0.5;
-      }
-      100% {
-        opacity: 0;
-      }
-    }
+  .top-editor .editor-wrap 50% {
+    opacity: 0.5;
+  }
+  .top-editor .editor-wrap 100% {
+    opacity: 1;
   }
 }
+@keyframes fadeOut {
+  .top-editor .editor-wrap 0% {
+    opacity: 1;
+  }
+  .top-editor .editor-wrap 50% {
+    opacity: 0.5;
+  }
+  .top-editor .editor-wrap 100% {
+    opacity: 0;
+  }
+}
+
 </style>

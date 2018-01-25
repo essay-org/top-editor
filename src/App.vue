@@ -25,7 +25,7 @@ export default {
       uploadImg: {
         url: 'http://localhost:8080/v1/upload',
         headers: {
-          token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InEiLCJ1c2VySUQiOiI1OWJmYjgyNWMyMjU1MTI5NDQwZDZlNGMiLCJpYXQiOjE1MTE4MzgzNjJ9.d-xKssD7mBtZfZvojv3tDhIaP9rpOIcyKG7dtxwlU9M'
+          token: ''
         }
       }
     }
