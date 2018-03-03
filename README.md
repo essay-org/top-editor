@@ -1,21 +1,27 @@
 ## 功能介绍
+
 1. 支持图片上传(允许跨域)
 2. 支持实时预览和全屏模式
 3. 支持通过粘贴键，上传qq截图
 4. 支持快捷键操作，例如撤销，恢复，缩进
+
 ## 安装
+
 ```node
 npm i top-editor highlight.js markdown-it -S
 ```
 
 ## 使用
+
 方法一全局引入(推荐)  
+
 ```javascript
 import TopEditor from 'TopEditor'
 Vue.use(TopEditor)
 ```
 
 ### 在组件中加载编辑器  
+
 ```html
 <template>
   <top-editor v-model="content" :options="options" :upload="upload"></top-editor>
@@ -55,8 +61,10 @@ Vue.use(TopEditor)
 </style>
 ```
 
-### 在前台显示渲染后的文本  
+### 在前台显示渲染后的文本
+
 当我们把markdown文本存入数据库后，前台需要显示解析后的html,这也是很简单的  
+
 ```html
 <template>
   <top-preview :content="content" :options="options"></top-preview>
@@ -87,9 +95,11 @@ Vue.use(TopEditor)
   @import '~highlight.js/styles/github.css';
 </style>
 ```
-注：为了减小包的体积，没把lighhight.js和markdown-it集成到top-editor    
+
+**说明**：为了减小包的体积，没把highlight.js和markdown-it集成到top-editor    
 
 ## 配置项说明
+
 属性：
 
 | 参数 | 说明 | 类型 | 默认值 |
@@ -101,8 +111,16 @@ Vue.use(TopEditor)
 | height  | 编辑器默认高度      | String   | 70vh |
 | upload  | 图片上传配置        | Object   | [详情](#upload) |
 
+事件：
+
+| 类型 | 说明 | 返回值 |
+| ------- | ------------------- | -------- | ---- |
+| save | 当ctrl+s时执行 | true |
+
 <a id="upload"></a>
+
 ### upload配置项
+
 ```javascript
 {
   // 图片上传api地址，需返回一个图片地址，如'https://test.com/static/a.jpg'
@@ -115,15 +133,23 @@ Vue.use(TopEditor)
 ```
 
 ## 查看演示和贡献代码
-1. `git clone https://github.com/vuetop/top-editor.git`
-2. `npm i vue markdown-it highlight.js`
-3. 修改webpack.config.js：
-  <!-- npm run build时打包文件  -->
-  entry: './src/lib/index.js',
-  <!-- npm run dev时查看演示 -->
-  entry: './src/main.js',
 
-### 效果图
+```bash
+git clone https://github.com/vuetop/top-editor.git
+npm i vue markdown-it highlight.js
+
+# 修改webpack.config.js
+# npm run build时打包文件
+entry: './src/lib/index.js',
+
+# npm run dev时查看演示
+entry: './src/main.js',
+```
+
+## 效果图
+
 ![top-editor](https://github.com/vuetop/top-editor/blob/master/demo/top-editor.png)  
+
 ## 开源协议
+
 MIT

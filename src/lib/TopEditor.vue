@@ -15,15 +15,16 @@
           <i class="icon iconfont icon-code" title="代码 &lt;code&gt; Ctrl+`" @click="doCode" hotkey="Ctrl+`"></i>
           <!-- 图片上传 -->
           <i class="icon iconfont icon-image" title="图片 &lt;img&gt; Ctrl+g" hotkey="Ctrl+g" @click="uploadClick" v-if="uploadOpt.url">
-            <input ref="upload" type="file" :name="uploadOpt.name" v-show="false" :accept="uploadOpt.accept" @change="fileUpload"/>
+            <input ref="upload" type="file" :name="uploadOpt.name" v-show="false" :accept="uploadOpt.accept" @change="fileUpload">
           </i>
           <i class="icon iconfont icon-undo" title="撤销 Ctrl+z" @click="undo" hotkey="Ctrl+z" :class="{'disable':!canUndo}"></i>
           <i class="icon iconfont icon-redo" title="恢复 Ctrl+y" @click="redo" hotkey="Ctrl+y" :class="{'disable':!canRedo}"></i>
-          <i class="icon iconfont icon-preview" @click="doPreview"></i>
+          <i class="icon iconfont icon-preview" @click="doPreview" title="预览"></i>
+          <i class="icon iconfont icon-save" title="保存 Ctrl+s" @click="doSave" hotkey="Ctrl+s"></i>
           <a href="http://wowubuntu.com/markdown/"><i class="icon iconfont icon-query"></i></a>
         </div>
         <div class="menu-group-right">
-          <i class="icon iconfont icon-fullscreen" @click="isFullScreen = !isFullScreen"></i>
+          <i class="icon iconfont icon-fullscreen" @click="isFullScreen = !isFullScreen" title="全屏"></i>
         </div>
       </div>
       <!-- 内容区 -->
@@ -33,7 +34,6 @@
           <textarea class="content-editor" v-model="content" @scroll="scrollReset" @keydown="keydown" @paste="pasteEvent" ref="editor" v-show="showContent" autocapitalize="off"></textarea>
           <!-- 预览区 -->
           <top-preview ref="preview" v-show="showPreview" :content="content" :options="options"></top-preview>
-
         </div>
         <transition enter-active-class="fade in" leave-active-class="fade out">
           <div class="upload-status" :class="statusMessage.type" v-show="statusMessage.show">{{statusMessage.text}}</div>
@@ -168,6 +168,9 @@ export default {
         this.showContent = !this.showContent
       }
     },
+    doSave() {
+      this.$emit('save', true)
+    },
     scrollReset() {
       let editor = this.$refs.editor
       let scrollHeight = (editor.scrollHeight - editor.clientHeight) || editor.scrollHeight
@@ -269,23 +272,23 @@ export default {
       let currentLength = this.content.length
       // 内容重置
       this.canUndo && this.currentIndex--
-        // 光标重置
-        this.$nextTick(() => {
-          // this.content.length是撤销后的内容长度
-          // start是撤销内容后的光标位置
-          start -= currentLength - this.content.length
-          setEditorRange(this.$refs.editor, start)
-        })
+      // 光标重置
+      this.$nextTick(() => {
+        // this.content.length是撤销后的内容长度
+        // start是撤销内容后的光标位置
+        start -= currentLength - this.content.length
+        setEditorRange(this.$refs.editor, start)
+      })
     },
     redo() {
       // 如果可以恢复，则currentIndex++
       let { start } = getEditorSelection(this.$refs.editor)
       let currentLength = this.content.length
       this.canRedo && this.currentIndex++
-        this.$nextTick(() => {
-          start += this.content.length - currentLength
-          setEditorRange(this.$refs.editor, start)
-        })
+      this.$nextTick(() => {
+        start += this.content.length - currentLength
+        setEditorRange(this.$refs.editor, start)
+      })
     },
 
     _status(type, text, time = text.length / 10 * 1000) {
@@ -405,6 +408,7 @@ body {
   height: 100%;
   border: 1px solid #ccc;
 }
+
 .top-editor.full-screen {
   position: fixed;
   top: 0;
@@ -412,12 +416,14 @@ body {
   width: 100%;
   height: 100%;
 }
+
 .top-editor .editor-wrap {
   position: relative;
   height: 100%;
   display: flex;
   flex-direction: column;
 }
+
 .top-editor .editor-wrap .editor-menu {
   width: 100%;
   display: flex;
@@ -429,6 +435,7 @@ body {
   border-bottom: 1px solid #ccc;
   background-color: #fff;
 }
+
 .top-editor .editor-wrap .editor-menu .icon {
   display: inline-block;
   padding: 10px;
@@ -436,20 +443,24 @@ body {
   color: #A9A9A9;
   cursor: pointer;
 }
+
 .top-editor .editor-wrap .editor-menu .disable {
   color: #eee;
   cursor: not-allowed;
 }
+
 .top-editor .editor-wrap .editor-content {
   position: relative;
   flex: 1;
 }
+
 .top-editor .editor-wrap .editor-content .content-wrap {
   position: absolute;
   width: 100%;
   height: 100%;
   display: flex;
 }
+
 .top-editor .editor-wrap .editor-content .content-wrap .content-editor {
   flex: 1;
   position: relative;
@@ -463,6 +474,7 @@ body {
   outline: none;
   overflow: auto;
 }
+
 .top-editor .editor-wrap .editor-content .content-wrap .content-preview {
   flex: 1;
   position: relative;
@@ -470,32 +482,40 @@ body {
   overflow: auto;
   background-color: #fff;
 }
+
 .top-editor .editor-wrap .upload-status {
   position: absolute;
   top: 0;
   padding: 8px;
-  background: rgba(0,0,0,0.1);
+  background: rgba(0, 0, 0, 0.1);
   width: 100%;
   color: #333;
 }
+
 .top-editor .editor-wrap .upload-status.info {
-  background: rgba(130,232,255,0.2);
+  background: rgba(130, 232, 255, 0.2);
 }
+
 .top-editor .editor-wrap .upload-status.success {
-  background: rgba(101,255,177,0.2);
+  background: rgba(101, 255, 177, 0.2);
 }
+
 .top-editor .editor-wrap .upload-status.error {
-  background: rgba(255,101,101,0.2);
+  background: rgba(255, 101, 101, 0.2);
 }
+
 .top-editor .editor-wrap .fade {
   animation-duration: 0.2s;
 }
+
 .top-editor .editor-wrap .fade.in {
   animation-name: fadeIn;
 }
+
 .top-editor .editor-wrap .fade.out {
   animation-name: fadeOut;
 }
+
 @keyframes fadeIn {
   .top-editor .editor-wrap 0% {
     opacity: 0;
@@ -507,6 +527,7 @@ body {
     opacity: 1;
   }
 }
+
 @keyframes fadeOut {
   .top-editor .editor-wrap 0% {
     opacity: 1;
@@ -518,5 +539,4 @@ body {
     opacity: 0;
   }
 }
-
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <top-editor v-model="content" :options="options" :zIndex="zIndex" :upload="uploadImg"></top-editor>
+  <top-editor v-model="content" :options="options" :zIndex="zIndex" :upload="uploadImg" @save="save"></top-editor>
 </template>
 <script>
 import content from '../README.md'
@@ -28,6 +28,11 @@ export default {
           token: ''
         }
       }
+    }
+  },
+  methods: {
+    save(val) {
+      console.log(val)
     }
   }
 }
