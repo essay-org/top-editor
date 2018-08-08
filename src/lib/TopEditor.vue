@@ -88,7 +88,7 @@ export default {
       history: [],
       uploadOpt: {
         name: 'file',
-        accept: 'image/jpg,image/jpeg,image/png',
+        accept: 'image/jpg,image/jpeg,image/png,image/gif',
         url: false,
         headers: {}
       },
